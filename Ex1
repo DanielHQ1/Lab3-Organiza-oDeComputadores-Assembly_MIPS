@@ -1,0 +1,17 @@
+# Lab 3 - Analise da Eficiencia do Bubble Sort na Alocacao Dinamica - Exercicio 1
+#Nome: Daniel Henrique Carvalho RA: 10736657
+#Nome: Felipe Sousa Vasques Honorato RA: 10735577
+#Nome: Giovani de Oliveira Cestari RA: 10738542
+#Nome: Laura Yumi Rodrigues Shiguemori RA:10735619
+
+.data
+
+.text
+.globl main
+
+main:
+li $s1, 10
+
+li $v0, 1
+move $a0, $s1
+syscall
