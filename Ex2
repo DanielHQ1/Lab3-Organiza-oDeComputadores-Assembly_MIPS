@@ -11,21 +11,32 @@
 	msg_1: .asciiz "Iniciando o programa."
 	msg_2: .asciiz "Digite o numero: "
 	espaco_text: .asciiz "\n"
+	espacos_text: .asciiz " "
+	termino_loop: .asciiz "termino loop"
 .text
 	
 .globl main
 
 main:
-	j inicio_programa
-
-inicio_programa:
 	li $v0, 4
 	la $a0, msg_1
 	syscall
 	
+	jal espaco
+	
+	li $t5, 0
+	li $t6, 10
+	
+	la $t0, vetor
+	move $t1, $t0
+	
 	j entrada_dados
+	
+	
 
 entrada_dados:
+	beq $t6, $t5 fora_loop
+	
 	li $v0, 4
 	la $a0, msg_2
 	syscall
@@ -35,13 +46,51 @@ entrada_dados:
 	
 	move $s0, $v0
 	
+	sw $s0, 0($t1)
+	
+	addi $t1, $t1, 4
+	addi $t5, $t5, 1
+	
+	j entrada_dados
+	
+fora_loop:
+	li $v0, 4
+	la $a0, termino_loop
+	syscall
+	
+	li $t5, 1
+	
+	jal espaco
+	
+	j loop_printando
+	
+	
+loop_printando:
+	beq $t6, $t5 fim
+	
+	lw $s3, 0($t0)
+	
+	li $v0, 1
+	move $a0, $s3
+	syscall
+	
+	li $v0, 4
+	la $a0, espacos_text
+	syscall
+	
+	addi $t0, $t0, 4
+	addi $t5, $t5, 1
+	j loop_printando
+	
 espaco:
+
 	li $v0, 4
 	la $a0, espaco_text
 	syscall
 	
-	
+	jr $ra
 
+	
 fim:
     li $v0, 10
     syscall
