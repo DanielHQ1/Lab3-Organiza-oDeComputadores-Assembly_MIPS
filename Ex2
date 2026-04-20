@@ -6,13 +6,42 @@
 #Nome: Laura Yumi Rodrigues Shiguemori RA:10735619
 
 .data
-
+	vetor: .word 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+	
+	msg_1: .asciiz "Iniciando o programa."
+	msg_2: .asciiz "Digite o numero: "
+	espaco_text: .asciiz "\n"
 .text
+	
 .globl main
 
 main:
-li $s1, 10
+	j inicio_programa
 
-li $v0, 1
-move $a0, $s1
-syscall
+inicio_programa:
+	li $v0, 4
+	la $a0, msg_1
+	syscall
+	
+	j entrada_dados
+
+entrada_dados:
+	li $v0, 4
+	la $a0, msg_2
+	syscall
+	
+	li $v0, 5
+	syscall 
+	
+	move $s0, $v0
+	
+espaco:
+	li $v0, 4
+	la $a0, espaco_text
+	syscall
+	
+	
+
+fim:
+    li $v0, 10
+    syscall
