@@ -6,13 +6,146 @@
 #Nome: Laura Yumi Rodrigues Shiguemori RA:10735619
 
 .data
+msg_qtd: .asciiz "Digite a quantidade de numeros (N > 0): "
+msg_erro: .asciiz "Erro: N deve ser maior que 0. Tente novamente.\n"
+msg_n: .asciiz "Digite o numero: "
+msg_ord: .asciiz "\nArray ordenado: "
+msg_comp: .asciiz "\nTotal de comparacoes: "
+msg_troca: .asciiz "\nTotal de trocas: "
+espaco: .asciiz " "
 
 .text
 .globl main
 
 main:
-li $s1, 10
+    # ===== Leitura e Validação de N =====
+ler_n:
+    li $v0, 4
+    la $a0, msg_qtd
+    syscall
 
-li $v0, 1
-move $a0, $s1
-syscall
+    li $v0, 5           # Lê inteiro N
+    syscall
+    move $s1, $v0       # $s1 = N
+
+    bgt $s1, $zero, alocar_memoria # Se N > 0, prossegue
+    
+    # Caso N <= 0 (invalido)
+    li $v0, 4
+    la $a0, msg_erro
+    syscall
+    j ler_n
+
+    # ===== Alocação Dinâmica na Heap =====
+alocar_memoria:
+    li $t0, 4           # Cada inteiro ocupa 4 bytes
+    mul $a0, $s1, $t0   # $a0 = N * 4 bytes
+    
+    li $v0, 9           # syscall 9: sbrk (aloca memória)
+    syscall
+    move $s0, $v0       # $s0 = Endereço base do array alocado
+
+    # ===== Leitura dos N números =====
+    li $t1, 0           # $t1 = contador (0 até N-1)
+    move $t2, $s0       # $t2 = ponteiro atual do array
+
+loop_leitura:
+    bge $t1, $s1, fim_leitura
+    
+    li $v0, 4
+    la $a0, msg_n
+    syscall
+
+    li $v0, 5           # Lê número
+    syscall
+    
+    sw $v0, 0($t2)      # Armazena número no array
+
+    addi $t2, $t2, 4    # Avança ponteiro do array
+    addi $t1, $t1, 1    # Incrementa contador
+    j loop_leitura
+
+fim_leitura:
+
+    # ===== Preparação para o Bubble Sort =====
+    li $s2, 0           # $s2 = Contador de comparações
+    li $s3, 0           # $s3 = Contador de trocas
+    
+    addi $t0, $s1, -1   # $t0 = limite do loop externo (N - 1)
+
+    # ===== Implementação do Bubble Sort =====
+loop_externo:
+    blez $t0, fim_sort  # Se limite <= 0, o array está ordenado
+    
+    li $t1, 0           # $t1 = contador do loop interno (j)
+    move $t2, $s0       # $t2 = ponteiro percorrendo o array
+
+loop_interno:
+    bge $t1, $t0, fim_interno
+    
+    lw $t3, 0($t2)      # A[j]
+    lw $t4, 4($t2)      # A[j+1]
+    
+    addi $s2, $s2, 1    # Incrementa contador de comparações
+    
+    ble $t3, $t4, sem_troca # Se A[j] <= A[j+1], não troca
+    
+    # Faz a troca
+    sw $t4, 0($t2)
+    sw $t3, 4($t2)
+    addi $s3, $s3, 1    # Incrementa contador de trocas
+
+sem_troca:
+    addi $t2, $t2, 4    # Avança ponteiro
+    addi $t1, $t1, 1    # Incrementa j
+    j loop_interno
+
+fim_interno:
+    addi $t0, $t0, -1   # Reduz o limite do loop externo
+    j loop_externo
+
+fim_sort:
+
+    # ===== Impressão dos Resultados =====
+    li $v0, 4
+    la $a0, msg_ord
+    syscall
+
+    li $t1, 0           # contador
+    move $t2, $s0       # ponteiro
+
+loop_imprime:
+    bge $t1, $s1, fim_imprime
+    
+    lw $a0, 0($t2)
+    li $v0, 1           # Imprime inteiro
+    syscall
+    
+    li $v0, 4
+    la $a0, espaco      # Imprime espaço
+    syscall
+
+    addi $t2, $t2, 4
+    addi $t1, $t1, 1
+    j loop_imprime
+
+fim_imprime:
+    # Imprime Comparações
+    li $v0, 4
+    la $a0, msg_comp
+    syscall
+    move $a0, $s2
+    li $v0, 1
+    syscall
+
+    # Imprime Trocas
+    li $v0, 4
+    la $a0, msg_troca
+    syscall
+    move $a0, $s3
+    li $v0, 1
+    syscall
+
+    # ===== Fim do Programa =====
+    li $v0, 10
+    syscall
