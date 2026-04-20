@@ -1,5 +1,6 @@
 # Lab 3 - Analise da Eficiencia do Bubble Sort na Alocacao Dinamica - Exercicio 1
 
+
 #Nome: Daniel Henrique Carvalho RA: 10736657
 #Nome: Felipe Sousa Vasques Honorato RA: 10735577
 #Nome: Giovani de Oliveira Cestari RA: 10738542
@@ -24,6 +25,7 @@ ler_n:
     la $a0, msg_qtd
     syscall
 
+<<<<<<< HEAD
     li $v0, 5           # Lê inteiro N
     syscall
     move $s1, $v0       # $s1 = N
@@ -149,3 +151,8 @@ fim_imprime:
     # ===== Fim do Programa =====
     li $v0, 10
     syscall
+=======
+li $v0, 1
+move $a0, $s1
+syscall
+>>>>>>> e3a7c2c73562ad348c58f19fca9f1f13adbf2cce
