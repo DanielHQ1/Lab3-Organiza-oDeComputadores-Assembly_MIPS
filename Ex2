@@ -13,11 +13,18 @@
 	espaco_text: .asciiz "\n"
 	espacos_text: .asciiz " "
 	termino_loop: .asciiz "termino loop"
+	
+#registadores em USO: 
+# T - T0, T3, T4, T5, T6
+# S - S7, S6, S3, S4
 .text
 	
 .globl main
 
 main:
+	li $s7, 0 #valor para no par
+	li $s6, 0 #valor para no impar
+
 	li $v0, 4
 	la $a0, msg_1
 	syscall
@@ -62,11 +69,13 @@ fora_loop:
 	
 	jal espaco
 	
+	move $t1, $t0
+	
 	j loop_printando
 	
 	
 loop_printando:
-	beq $t6, $t5 fim
+	beq $t6, $t5 continuando
 	
 	lw $s3, 0($t0)
 	
@@ -82,6 +91,82 @@ loop_printando:
 	addi $t5, $t5, 1
 	j loop_printando
 	
+continuando:
+	li $t5, 0
+
+	move $t0, $t1
+	
+	li $s0, 1
+	j div_impar_par
+	
+div_impar_par:
+	beq $t6, $t5 percore_os_pares
+	
+	lw $t3, 0($t0)
+#retorno sera em s3
+
+	jal paridade
+	
+	beq $zero, $s6, caso_par
+	bgt $zero, $s6, caso_impar
+	
+	addi $t0, $t0, 4
+	addi $t5, $t5, 1
+	
+caso_par:
+	li $v0, 9
+	li $a0, 8
+	syscall
+	
+	move $t4, $v0
+	
+	sw $t3, 0($t4)
+	
+	sw $s7, 4($t4)
+	
+	move $s7, $t4
+	
+	j div_impar_par	
+	
+
+	
+caso_impar:
+	li $v0, 9
+	li $a0, 8
+	syscall
+	
+	move $t4, $v0
+	
+	sw $t3, 0($t4)
+	
+	sw $s6, 4($t4)
+	
+	move $s6, $t4
+
+	j div_impar_par
+
+	
+paridade:	
+	andi $s3, $t3, 1
+	
+	jr $ra
+	
+percore_os_pares:
+ 	beq $s7, $zero, percore_os_impares
+
+    	lw $t5, 0($s7)   # pega valor
+
+    	# imprime inteiro
+    	move $a0, $t5
+    	li $v0, 1
+    	syscall
+
+   	 # imprime espaço
+	jal espaco
+	
+    	lw $s7, 4($s7)   # próximo nó
+    	j percore_os_pares
+	
 espaco:
 
 	li $v0, 4
@@ -89,6 +174,7 @@ espaco:
 	syscall
 	
 	jr $ra
+
 
 	
 fim:
