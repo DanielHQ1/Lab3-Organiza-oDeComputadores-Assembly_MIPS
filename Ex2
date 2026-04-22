@@ -65,7 +65,7 @@ fora_loop:
 	la $a0, termino_loop
 	syscall
 	
-	li $t5, 1
+	li $t5, 0
 	
 	jal espaco
 	
@@ -100,15 +100,15 @@ continuando:
 	j div_impar_par
 	
 div_impar_par:
-	beq $t6, $t5 percore_os_pares
+	beq $t6, $t5, percore_os_pares
 	
 	lw $t3, 0($t0)
 #retorno sera em s3
 
 	jal paridade
 	
-	beq $zero, $s6, caso_par
-	bgt $zero, $s6, caso_impar
+	beq $zero, $s3, caso_par
+	bgt $zero, $s3, caso_impar
 	
 	addi $t0, $t0, 4
 	addi $t5, $t5, 1
@@ -150,7 +150,21 @@ paridade:
 	andi $s3, $t3, 1
 	
 	jr $ra
-	
+
+percore_os_impares:
+    beq $s6, $zero, fim
+
+    lw $t5, 0($s6)
+
+    li $v0, 1
+    move $a0, $t5
+    syscall
+
+    jal espaco
+
+    lw $s6, 4($s6)
+    j percore_os_impares
+    
 percore_os_pares:
  	beq $s7, $zero, percore_os_impares
 
