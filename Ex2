@@ -8,11 +8,13 @@
 .data
 	vetor: .word 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 	
-	msg_1: .asciiz "Iniciando o programa."
+	msg_1: .asciiz "Digite 10 numeros inteiros. Eles serao separados em listas de pares e impares."
 	msg_2: .asciiz "Digite o numero: "
 	espaco_text: .asciiz "\n"
 	espacos_text: .asciiz " "
 	termino_loop: .asciiz "termino loop"
+	msg_par: .asciiz "\nPares: "
+	msg_impar: .asciiz "\nImpares: "
 	
 #registadores em USO: 
 # T - T0, T3, T4, T5, T6
@@ -39,10 +41,8 @@ main:
 	
 	j entrada_dados
 	
-	
-
 entrada_dados:
-	beq $t6, $t5 fora_loop
+	beq $t6, $t5, fora_loop
 	
 	li $v0, 4
 	la $a0, msg_2
@@ -69,13 +69,13 @@ fora_loop:
 	
 	jal espaco
 	
+	la $t0, vetor
 	move $t1, $t0
 	
 	j loop_printando
 	
-	
 loop_printando:
-	beq $t6, $t5 continuando
+	beq $t6, $t5, continuando
 	
 	lw $s3, 0($t0)
 	
@@ -107,11 +107,8 @@ div_impar_par:
 
 	jal paridade
 	
-	beq $zero, $s3, caso_par
-	bgt $zero, $s3, caso_impar
-	
-	addi $t0, $t0, 4
-	addi $t5, $t5, 1
+	beq $s3, $zero, caso_par
+	j caso_impar
 	
 caso_par:
 	li $v0, 9
@@ -126,9 +123,10 @@ caso_par:
 	
 	move $s7, $t4
 	
-	j div_impar_par	
+	addi $t0, $t0, 4
+	addi $t5, $t5, 1
 	
-
+	j div_impar_par	
 	
 caso_impar:
 	li $v0, 9
@@ -143,9 +141,11 @@ caso_impar:
 	
 	move $s6, $t4
 
+	addi $t0, $t0, 4
+	addi $t5, $t5, 1
+
 	j div_impar_par
 
-	
 paridade:	
 	andi $s3, $t3, 1
 	
@@ -160,26 +160,40 @@ percore_os_impares:
     move $a0, $t5
     syscall
 
-    jal espaco
+    li $v0, 4
+    la $a0, espacos_text
+    syscall
 
     lw $s6, 4($s6)
     j percore_os_impares
     
 percore_os_pares:
- 	beq $s7, $zero, percore_os_impares
+ 	li $v0, 4
+	la $a0, msg_par
+	syscall
 
-    	lw $t5, 0($s7)   # pega valor
+loop_pares:
+ 	beq $s7, $zero, inicio_impares
 
-    	# imprime inteiro
+    	lw $t5, 0($s7)
+
     	move $a0, $t5
     	li $v0, 1
     	syscall
 
-   	 # imprime espaço
-	jal espaco
+	li $v0, 4
+	la $a0, espacos_text
+	syscall
 	
-    	lw $s7, 4($s7)   # próximo nó
-    	j percore_os_pares
+    	lw $s7, 4($s7)
+    	j loop_pares
+
+inicio_impares:
+	li $v0, 4
+	la $a0, msg_impar
+	syscall
+
+	j percore_os_impares
 	
 espaco:
 
@@ -189,8 +203,6 @@ espaco:
 	
 	jr $ra
 
-
-	
 fim:
     li $v0, 10
-    syscall
+    syscall 
