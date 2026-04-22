@@ -24,106 +24,106 @@
 .globl main
 
 main:
-	li $s7, 0 #valor para no par
-	li $s6, 0 #valor para no impar
+	li $s7, 0 # lista de pares (inicia vazia)
+	li $s6, 0 # lista de impares (inicia vazia)
 
 	li $v0, 4
 	la $a0, msg_1
-	syscall
+	syscall # imprime mensagem inicial
 	
-	jal espaco
+	jal espaco # pula linha
 	
-	li $t5, 0
-	li $t6, 10
+	li $t5, 0 # contador
+	li $t6, 10 # limite de 10 numeros
 	
-	la $t0, vetor
-	move $t1, $t0
+	la $t0, vetor # ponteiro para vetor
+	move $t1, $t0 # copia do ponteiro
 	
-	j entrada_dados
+	j entrada_dados # vai ler os dados
+	
 	
 entrada_dados:
-	beq $t6, $t5, fora_loop
+	beq $t6, $t5, fora_loop # se leu 10, sai
 	
 	li $v0, 4
 	la $a0, msg_2
-	syscall
+	syscall # pede numero
 	
 	li $v0, 5
-	syscall 
+	syscall # le numero
 	
 	move $s0, $v0
 	
-	sw $s0, 0($t1)
+	sw $s0, 0($t1) # salva no vetor
 	
-	addi $t1, $t1, 4
-	addi $t5, $t5, 1
+	addi $t1, $t1, 4 # proxima posicao
+	addi $t5, $t5, 1 # incrementa contador
 	
 	j entrada_dados
 	
 fora_loop:
 	li $v0, 4
 	la $a0, termino_loop
-	syscall
+	syscall # mensagem de fim
 	
-	li $t5, 0
+	li $t5, 0 # zera contador
 	
 	jal espaco
 	
-	la $t0, vetor
+	la $t0, vetor # volta pro inicio do vetor
 	move $t1, $t0
 	
 	j loop_printando
 	
 loop_printando:
-	beq $t6, $t5, continuando
+	beq $t6, $t5, continuando # para quando chegar em 10
 	
-	lw $s3, 0($t0)
+	lw $s3, 0($t0) # pega valor do vetor
 	
 	li $v0, 1
 	move $a0, $s3
-	syscall
+	syscall # imprime numero
 	
 	li $v0, 4
 	la $a0, espacos_text
-	syscall
+	syscall # imprime espaço
 	
-	addi $t0, $t0, 4
-	addi $t5, $t5, 1
+	addi $t0, $t0, 4 # proximo elemento
+	addi $t5, $t5, 1 # incrementa contador
 	j loop_printando
 	
 continuando:
-	li $t5, 0
+	li $t5, 0 # zera contador
 
-	move $t0, $t1
+	move $t0, $t1 # volta ponteiro pro inicio
 	
 	li $s0, 1
 	j div_impar_par
 	
 div_impar_par:
-	beq $t6, $t5, percore_os_pares
+	beq $t6, $t5, percore_os_pares # terminou vetor
 	
-	lw $t3, 0($t0)
-#retorno sera em s3
-
-	jal paridade
+	lw $t3, 0($t0) # valor atual
 	
-	beq $s3, $zero, caso_par
-	j caso_impar
+	jal paridade # verifica par ou impar
+	
+	beq $s3, $zero, caso_par # se s3=0 ? par
+	j caso_impar # senao ? impar
 	
 caso_par:
 	li $v0, 9
 	li $a0, 8
-	syscall
+	syscall # aloca 8 bytes (novo nó)
 	
 	move $t4, $v0
 	
-	sw $t3, 0($t4)
+	sw $t3, 0($t4) # salva valor
 	
-	sw $s7, 4($t4)
+	sw $s7, 4($t4) # aponta pro inicio da lista de pares
 	
-	move $s7, $t4
+	move $s7, $t4 # atualiza inicio da lista
 	
-	addi $t0, $t0, 4
+	addi $t0, $t0, 4 # proximo elemento
 	addi $t5, $t5, 1
 	
 	j div_impar_par	
@@ -131,78 +131,76 @@ caso_par:
 caso_impar:
 	li $v0, 9
 	li $a0, 8
-	syscall
+	syscall # aloca 8 bytes
 	
 	move $t4, $v0
 	
-	sw $t3, 0($t4)
+	sw $t3, 0($t4) # salva valor
 	
-	sw $s6, 4($t4)
+	sw $s6, 4($t4) # aponta pro inicio da lista de impares
 	
-	move $s6, $t4
-
+	move $s6, $t4 # atualiza lista
+	
 	addi $t0, $t0, 4
 	addi $t5, $t5, 1
 
 	j div_impar_par
 
 paridade:	
-	andi $s3, $t3, 1
-	
+	andi $s3, $t3, 1 # verifica ultimo bit (0=par, 1=impar)
 	jr $ra
 
 percore_os_impares:
-    beq $s6, $zero, fim
+    beq $s6, $zero, fim # se lista vazia, termina
 
-    lw $t5, 0($s6)
+    lw $t5, 0($s6) # pega valor
 
     li $v0, 1
     move $a0, $t5
-    syscall
+    syscall # imprime numero
 
     li $v0, 4
     la $a0, espacos_text
-    syscall
+    syscall # espaço
 
-    lw $s6, 4($s6)
+    lw $s6, 4($s6) # vai pro proximo nó
     j percore_os_impares
     
 percore_os_pares:
  	li $v0, 4
 	la $a0, msg_par
-	syscall
+	syscall # imprime "pares"
 
 loop_pares:
- 	beq $s7, $zero, inicio_impares
+ 	beq $s7, $zero, inicio_impares # acabou lista de pares
 
-    	lw $t5, 0($s7)
+    	lw $t5, 0($s7) # pega valor
 
     	move $a0, $t5
     	li $v0, 1
-    	syscall
+    	syscall # imprime numero
 
 	li $v0, 4
 	la $a0, espacos_text
-	syscall
+	syscall # espaço
 	
-    	lw $s7, 4($s7)
+    	lw $s7, 4($s7) # proximo nó
     	j loop_pares
 
 inicio_impares:
 	li $v0, 4
 	la $a0, msg_impar
-	syscall
+	syscall # imprime "impares"
 
 	j percore_os_impares
 	
 espaco:
-
 	li $v0, 4
 	la $a0, espaco_text
-	syscall
-	
+	syscall # quebra de linha
 	jr $ra
 
 fim:
     li $v0, 10
-    syscall 
+    syscall # encerra programa
+    
